@@ -1,0 +1,10 @@
+pandas
+scikit-learn
+gradio
+pythainlp
+librosa
+soundfile
+torch
+transformers
+scipy
+numpy
