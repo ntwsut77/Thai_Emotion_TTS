@@ -5,7 +5,7 @@
 
 ---
 
-## 📘 Overview  
+## 1.📘 Overview  
 Emotion-aware speech generation improves clarity, engagement, and human–computer interaction.  
 However, **Thai language TTS rarely supports emotion**, mainly due to:
 
@@ -26,7 +26,7 @@ The goal is to build a **working end-to-end prototype** that can process Thai te
 
 ---
 
-## 🧠 System Architecture  
+##2. 🧠 System Architecture  
       ┌────────────────────┐
       │  Text Input (TH)   │
       └─────────┬──────────┘
@@ -64,115 +64,118 @@ The goal is to build a **working end-to-end prototype** that can process Thai te
 
 ---
 
-## 🎯 Background & Motivation  
-Emotion plays a crucial role in **news narration**, **digital storytelling**, **audiobooks**, and **AI voice agents**.  
-While English emotion-TTS is widely supported, **Thai TTS remains monotonic**, with major gaps:
+---
 
-- No robust open-source Thai SER datasets  
-- Prosody control is underdeveloped  
-- Existing Thai TTS models lack emotional conditioning  
-- Thai ASR historically lags behind English benchmarks  
+# 3. Functionality Evaluation
 
-This project aims to fill these practical gaps, focusing on:
+## 3.1 Input → Emotion → TTS Pipeline
 
-1. **End-to-end integration** of Thai ASR → Emotion → TTS  
-2. **Practicality** within limited GPU/CPU resources (suitable for student research)  
-3. **Explainability** through hybrid rule-based + ML emotion detection  
-4. **Feasibility** using open models with Thai support (Whisper, MMS TTS)
+### **Input Stage**
+Users can either:
+- Type Thai text  
+- Upload/record Thai audio  
+
+If audio is provided, the system prioritizes it.
 
 ---
 
-## ⚙️ Methodology  
-
-### **1. Automatic Speech Recognition (Whisper-large-v3)**  
-- Whisper is used to convert optional speech input into text.  
-- `chunk_length_s = 30` ensures long audio is supported without memory overflow.  
-- Works well on Thai due to training on multilingual datasets.  
-
-### **2. Text Preprocessing (PyThaiNLP)**  
-- Uses `normalize()` to clean Thai text, remove weird Unicode, and unify tone marks.  
-- Intentional choice: **no tokenization** → keeps phrasing natural for TTS prosody.  
-- Suitable for news-style delivery where pause boundaries matter.
+### **ASR Stage (Whisper Large-V3)**
+- Uses chunking (`chunk_length_s=30`) to support long recordings  
+- Produces a Thai transcript  
+- Handles noisy environments moderately well  
 
 ---
 
-### **3. Emotion Classification (Hybrid Model)**  
-Emotion categories:  
-`news`, `happy`, `sad`, `angry`, `excited`
-
-#### **Machine Learning Component**
-- TF-IDF vectorizer (20k vocabulary)  
-- LinearSVC classifier  
-- Trained on news-like content loaded from `corpus.parquet`  
-- Balanced performance and fast inference  
-
-#### **Rule-Based Component**  
-Handles explicit emotional cues via Thai keywords  
-(เช่น “เศร้า”, “ดีใจ”, “เดือด”)  
-This improves accuracy in sentiment-heavy sentences.
+### **Preprocessing Stage**
+- Normalizes Thai text (`normalize()`)
+- Removes unnecessary characters
+- *Word tokenization is intentionally disabled* to maintain natural TTS prosody
 
 ---
 
-### **4. Thai Text-to-Speech (facebook/mms-tts-tha)**  
-The model is based on **VITS: Variational Inference Text-to-Speech**, supporting:
+### **Emotion Classification Stage**
+Hybrid model:
+1. **ML-based** — TF-IDF + LinearSVC trained from corpus.parquet  
+2. **Rule-based** — keyword override  
+   - “เศร้า”, “สูญเสีย” → sad  
+   - “ด่วน”, “ล่าสุด” → excited  
+   - “โกรธ”, “เดือด” → angry  
 
-- End-to-end phoneme-to-waveform generation  
-- Smooth, natural Thai pronunciation  
-- Fast waveform generation  
-
-**Prosody Control (Conceptual Mapping):**  
-Emotion → `(speed, noise)` parameters conceptually mapped to indicate expressive changes.  
-Although MMS does not expose built-in emotional embeddings, conceptual prosody adjustment provides audible variation.
-
----
-
-### **5. Output Module (Gradio)**  
-Gradio is used to deliver:
-
-- Audio output (.wav)  
-- Clean text  
-- Detected emotion  
-- Interactive sharing (public demo link)
+Emotion categories:
+- news  
+- happy  
+- sad  
+- angry  
+- excited  
 
 ---
 
-## 📊 Results & Analysis  
-### **1. ASR Performance**
-Whisper-large-v3 produced reliable Thai transcripts even with varying accents and background noise.
+### **TTS Stage (MMS-Thai TTS)**
+Emotion → Prosody mapping (speed, noise):
+- **news:** neutral  
+- **happy:** faster, lighter  
+- **sad:** slower, softer  
+- **angry:** fast + high noise  
+- **excited:** very fast, strong brightness  
 
-### **2. Emotion Classification**
-- TF-IDF + SVM baseline: stable performance on structured text  
-- Rule-based override correctly fixes ML mispredictions  
-- Effective for news-style emotional cues
-
-### **3. TTS Emotional Expression**
-MMS Thai TTS generated clear pronunciation with conceptual variations such as:
-
-- **Happy** → lighter, slightly faster  
-- **Sad** → slower, lower tone  
-- **Angry** → sharper onset, slightly increased noise  
-- **Excited** → higher energy  
-
-While not true emotional embeddings, the conceptual prosody mapping enhances perceived expression.
+Output: **16-bit PCM WAV**
 
 ---
 
-## ⚠️ Limitations  
-- MMS lacks built-in emotional conditioning → limits expressiveness  
-- Rule-based emotion classification fails on subtle context  
-- Long sentences reduce prosody accuracy  
-- Multi-speaker TTS not supported  
-- Emotion-to-prosody mapping remains conceptual, not learned
+## 3.2 Strengths of the System
+- Supports both audio and text input  
+- Whisper ASR handles Thai speech with high accuracy  
+- Emotion classifier more robust via hybrid logic  
+- MMS TTS produces stable, clear Thai voice  
+- Works entirely inside Colab with no installation  
+- Simple Gradio interface for demo and evaluation  
 
 ---
 
-## 🧭 Future Work  
-- Train Thai emotion embeddings via VITS fine-tuning  
-- Extend corpus with labeled emotional audio  
-- Integrate Multi-speaker TTS models  
-- Introduce objective metrics (MOS, SER accuracy alignment)  
-- Mobile/Realtime deployment via ONNX or quantized inference  
+## 3.3 Limitations
+- Whisper may misinterpret background noise  
+- Emotion in TTS is prosody-based, not deep emotional synthesis  
+- Keyword rules may fail on slang/metaphorical expressions  
+- MMS-TTS provides only one speaker voice  
+- TTS may distort if noise_scale is too high  
 
 ---
+
+# 4. Usability Evaluation
+
+## 4.1 How to Run (Google Colab)
+
+### **Step-by-step**
+1. Open the notebook:  
+   *(Insert link here)*  
+2. Click **Runtime → Run all**  
+3. Wait until Whisper, Emotion Classifier, and MMS TTS load  
+4. When Gradio launches, click the public link to open the demo UI  
+
+---
+
+## 4.2 How to Use the Web Interface
+
+### **Text Input**
+- Type any Thai sentence  
+- Enable or disable Auto Emotion  
+
+### **Audio Input**
+- Upload a `.wav` / `.mp3` file  
+- Or use the built-in microphone recorder  
+
+### **Emotion Selection**
+- Auto mode uses classifier  
+- Manual mode overrides with 5 presets  
+
+### **Output Section**
+- Generated Audio (playable WAV)  
+- Processed Text  
+- Detected Emotion  
+
+---
+
+## 4.3 Suggested Screenshots
+<img width="1920" height="629" alt="{371BBD85-12B0-413A-9332-C911C0042D15}" src="https://github.com/user-attachments/assets/903efa50-d9ca-4d05-9e9c-8c7aa85dbec0" />
 
 
