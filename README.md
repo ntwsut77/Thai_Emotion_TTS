@@ -27,36 +27,7 @@ The goal is to build a **working end-to-end prototype** that can process Thai te
 ---
 
 ##2. 🧠 System Architecture  
-    Text Input (Thai)
-        │
-        ├───────────────┐
-        │               │
-Audio Input (Thai)      │
-        │               │
-  librosa / ffmpeg      │
-        │               │
-     Whisper ASR         │
-   (Large-V3, 30s)       │
-        │               │
-        └───────► Cleaned Text
-                    │
-             PyThaiNLP normalize()
-                    │
-             Emotion Module
-        ┌───────────┴───────────┐
-        │                       │
- TF-IDF + LinearSVC     Rule-based Keywords
-        │                       │
-        └───────────► Final Emotion
-                    │
-     MMS Thai TTS (VITS)
-   facebook/mms-tts-tha
-                    │
-        Prosody Mapping
-        (speed / noise)
-                    │
-        Emotion-aware WAV Output
-                (Gradio UI)
+<img width="399" height="758" alt="{5D7BE301-8240-41DA-9AC1-7A068EBF2AD3}" src="https://github.com/user-attachments/assets/68c6af01-f09b-486c-940f-982ca793b379" />
 
 ---
 
