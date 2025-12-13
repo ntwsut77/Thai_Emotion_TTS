@@ -5,6 +5,10 @@
 
 ---
 
+use script 01-05 for collect data
+
+---
+
 ## 1.📘 Overview  
 Emotion-aware speech generation improves clarity, engagement, and human–computer interaction.  
 However, **Thai language TTS rarely supports emotion**, mainly due to:
